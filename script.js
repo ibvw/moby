@@ -1,5 +1,5 @@
 
-JavaScript
+
 // 1. Grund-Daten laden
 let alarms = JSON.parse(localStorage.getItem('myAlarms')) || [];
 const dayNames = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
