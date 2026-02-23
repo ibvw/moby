@@ -94,15 +94,26 @@ function generateShareLink() {
         alert("Erstelle erst Wecker, bevor du einen Link teilst!");
         return;
     }
-    const dataString = encodeURIComponent(JSON.stringify(alarms));
-    const baseUrl = window.location.origin + window.location.pathname;
-    const fullLink = baseUrl + "?setup=" + dataString;
 
+    // 1. Die Wecker-Daten in einen Text-String umwandeln
+    const jsonString = JSON.stringify(alarms);
+    
+    // 2. Den String sicher für URLs codieren (verhindert Fehler bei Sonderzeichen)
+    const encodedData = encodeURIComponent(jsonString);
+    
+    // 3. Den Link zusammenbauen (Basis-URL + der Parameter)
+    const baseUrl = window.location.origin + window.location.pathname;
+    const fullLink = baseUrl + "?setup=" + encodedData;
+
+    // 4. In die Zwischenablage kopieren
     navigator.clipboard.writeText(fullLink).then(() => {
-        alert("🔗 Link kopiert! Schicke ihn deiner Kollegin.");
+        alert("✅ Link mit " + alarms.length + " Weckern kopiert!\nDu kannst ihn jetzt im Inkognito-Tab testen.");
+    }).catch(err => {
+        console.error("Fehler beim Kopieren:", err);
+        alert("Fehler beim Kopieren. Du findest den Link in der Konsole (F12).");
+        console.log("Dein Link:", fullLink);
     });
 }
-
 // 7. Hilfsfunktionen
 function saveData() {
     localStorage.setItem('myAlarms', JSON.stringify(alarms));
