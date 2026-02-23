@@ -97,28 +97,30 @@ function checkAlarms() {
 // 6. Link erstellen
 function generateShareLink() {
     if (alarms.length === 0) {
-        alert("Erstelle erst Wecker, bevor du einen Link teilst!");
+        alert("Bitte erstelle zuerst mindestens einen Wecker!");
         return;
     }
 
-    // 1. Die Wecker-Daten in einen Text-String umwandeln
-    const jsonString = JSON.stringify(alarms);
-    
-    // 2. Den String sicher für URLs codieren (verhindert Fehler bei Sonderzeichen)
-    const encodedData = encodeURIComponent(jsonString);
-    
-    // 3. Den Link zusammenbauen (Basis-URL + der Parameter)
-    const baseUrl = window.location.origin + window.location.pathname;
-    const fullLink = baseUrl + "?setup=" + encodedData;
+    try {
+        // 1. Daten in Text umwandeln
+        const jsonString = JSON.stringify(alarms);
+        // 2. Sicher für URLs codieren
+        const encodedData = encodeURIComponent(jsonString);
+        
+        // 3. Den Link absolut sicher zusammenbauen
+        // Wir nehmen die aktuelle Adresse und hängen das ?setup= direkt an
+        const currentUrl = window.location.href.split('?')[0]; 
+        const fullLink = currentUrl + "?setup=" + encodedData;
 
-    // 4. In die Zwischenablage kopieren
-    navigator.clipboard.writeText(fullLink).then(() => {
-        alert("✅ Link mit " + alarms.length + " Weckern kopiert!\nDu kannst ihn jetzt im Inkognito-Tab testen.");
-    }).catch(err => {
-        console.error("Fehler beim Kopieren:", err);
-        alert("Fehler beim Kopieren. Du findest den Link in der Konsole (F12).");
-        console.log("Dein Link:", fullLink);
-    });
+        // 4. Kopieren
+        navigator.clipboard.writeText(fullLink).then(() => {
+            alert("🔗 Link kopiert! Er enthält " + alarms.length + " Wecker.\n\nTest: Füge ihn in einem neuen Tab ein.");
+            console.log("Generierter Link:", fullLink);
+        });
+    } catch (error) {
+        console.error("Fehler beim Link-Erstellen:", error);
+        alert("Link-Erstellung fehlgeschlagen. Details in der Konsole.");
+    }
 }
 // 7. Hilfsfunktionen
 function saveData() {
