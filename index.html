@@ -8,65 +8,48 @@
 <style>
 body { background: #121212; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
 #digitalClock { font-size: 3.5rem; color: #03dac6; margin: 20px 0; font-weight: bold; }
-.card { background: #1e1e1e; padding: 20px; border-radius: 12px; display: inline-block; box-shadow: 0 4px 15px rgba(0,0,0,0.5); width: 90%; max-width: 400px; }
-input, select { padding: 10px; margin: 5px; border-radius: 6px; border: 1px solid #333; background: #2c2c2c; color: white; }
-button { padding: 10px 20px; margin: 10px 5px; cursor: pointer; border-radius: 6px; border: none; font-weight: bold; }
-.btn-save { background: #03dac6; color: black; }
-.btn-share { background: #bb86fc; color: black; }
-#alarmList { list-style: none; padding: 0; max-width: 400px; margin: 20px auto; }
-.item { background: #2c2c2c; padding: 15px; margin-bottom: 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #03dac6; text-align: left; }
-.delete-btn { background: #cf6679; color: white; padding: 5px 10px; border-radius: 4px; }
-.days-info { font-size: 0.8rem; color: #aaa; }
+.card { background: #1e1e1e; padding: 20px; border-radius: 12px; display: inline-block; box-shadow: 0 4px 15px rgba(0,0,0,0.5); width: 95%; max-width: 450px; }
+input[type="text"], input[type="time"] { padding: 10px; margin: 5px; border-radius: 6px; border: 1px solid #333; background: #2c2c2c; color: white; width: 80%; }
+
 </style>
 </head>
 <body>
 
-<div id="digitalClock">Lade Uhr...</div>
+<div id="digitalClock">...</div>
 
 <div class="card">
 <h3>Neuer Wecker</h3>
-<input type="text" id="alarmTitle" placeholder="Name (z.B. Meeting)">
+<input type="text" id="alarmTitle" placeholder="Bezeichnung (z.B. Meeting)">
 <input type="time" id="alarmTime">
-<div style="margin: 10px 0; font-size: 0.9rem;">
-Standard: Mo-Fr (Werktage)
-</div>
-<button class="btn-save" onclick="addAlarm()">Speichern</button>
-<button class="btn-share" onclick="generateShareLink()">Link teilen</button>
+
 </div>
 
 <ul id="alarmList"></ul>
 
 <script>
-// DATEN-SPEICHER
 let alarms = JSON.parse(localStorage.getItem('myAlarms')) || [];
 const dayNames = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
 
-// UHR-FUNKTION (SICHERER START)
 function updateClock() {
 const el = document.getElementById('digitalClock');
-if (el) {
-const now = new Date();
-el.textContent = now.toLocaleTimeString('de-DE');
-}
+if (el) el.textContent = new Date().toLocaleTimeString('de-DE');
 }
 
-// ANZEIGE-FUNKTION
 function renderAlarms() {
 const list = document.getElementById('alarmList');
 if (!list) return;
 list.innerHTML = "";
+alarms.sort((a, b) => a.time.localeCompare(b.time));
 
 }
 
-// HINZUFÜGEN
 function addAlarm() {
 const time = document.getElementById('alarmTime').value;
 const title = document.getElementById('alarmTitle').value || "Wecker";
-if(!time) return alert("Bitte Zeit wählen!");
+const checkboxes = document.querySelectorAll('.days-selector input:checked');
 
 }
 
-// LÖSCHEN
 function deleteAlarm(id) {
 if(confirm("Löschen?")) {
 alarms = alarms.filter(a => a.id !== id);
@@ -74,22 +57,19 @@ save();
 }
 }
 
-// SPEICHERN
 function save() {
 localStorage.setItem('myAlarms', JSON.stringify(alarms));
 renderAlarms();
 }
 
-// TEILEN-LINK
 function generateShareLink() {
 if(alarms.length === 0) return alert("Keine Wecker vorhanden!");
 const d = encodeURIComponent(JSON.stringify(alarms));
 const l = window.location.origin + window.location.pathname + "?setup=" + d;
-
+navigator.clipboard.writeText(l).then(() => alert("🔗 Link kopiert!"));
 }
 
-// IMPORT AUS LINK
-function checkImport() {
+// URL Import
 const params = new URLSearchParams(window.location.search);
 const setup = params.get('setup');
 if (setup) {
@@ -98,22 +78,15 @@ const decoded = JSON.parse(decodeURIComponent(setup));
 if (Array.isArray(decoded)) {
 alarms = decoded;
 localStorage.setItem('myAlarms', JSON.stringify(alarms));
-alert("Setup geladen!");
+alert("✅ Setup geladen!");
 window.history.replaceState({}, "", window.location.pathname);
 }
-} catch (e) { console.error("Import-Fehler", e); }
-}
+} catch (e) { console.error(e); }
 }
 
-// START-SEQUENZ
-try {
-checkImport();
 setInterval(updateClock, 1000);
 updateClock();
 renderAlarms();
-} catch (e) {
-console.error("Kritischer Startfehler", e);
-}
 </script>
 
 </body>
