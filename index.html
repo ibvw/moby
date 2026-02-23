@@ -1,46 +1,21 @@
+
 <!DOCTYPE html>
+
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schwimmzeiten | Team-Edition</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>Team Wecker</title>
+<style>
+body { font-family: sans-serif; background: #121212; color: white; text-align: center; padding: 20px; }
+.clock { font-size: 3rem; margin-bottom: 20px; color: #bb86fc; }
+.card { background: #1e1e1e; padding: 20px; border-radius: 12px; max-width: 400px; margin: 0 auto; }
+input { padding: 10px; margin: 5px; border-radius: 5px; border: none; }
+button { padding: 10px 20px; margin: 10px; cursor: pointer; border-radius: 5px; border: none; background: #03dac6; color: black; font-weight: bold; }
+#alarmList { list-style: none; padding: 0; }
+.alarm-item { background: #333; margin: 10px 0; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>⏰ Schwimmzeiten-Wecker</h1>
 
-        <div id="digitalClock" style="font-size: 3rem; font-weight: bold; color: #bb86fc; text-align: center; margin-bottom: 20px; font-family: monospace;">
-            00:00:00
-        </div>
-        
-        <div class="setup-area">
-            <input type="text" id="alarmTitle" placeholder="Titel (z.B. Meeting)">
-            <input type="time" id="alarmTime">
-            
-            <div class="days-selector">
-                <label><input type="checkbox" value="1"> Mo</label>
-                <label><input type="checkbox" value="2"> Di</label>
-                <label><input type="checkbox" value="3"> Mi</label>
-                <label><input type="checkbox" value="4"> Do</label>
-                <label><input type="checkbox" value="5"> Fr</label>
-                <label><input type="checkbox" value="6"> Sa</label>
-                <label><input type="checkbox" value="0"> So</label>
-            </div>
-            
-            <button onclick="addAlarm()">Wecker stellen</button>
-            
-            <button onclick="generateShareLink()" style="background-color: #6200ee; margin-top: 10px;">
-                🔗 Link kopieren
-            </button>
-        </div>
-
-        <hr style="border: 0; border-top: 1px solid #444; margin: 20px 0;">
-
-        <h2>Meine aktiven Wecker</h2>
-        <ul id="alarmList"></ul>
-    </div>
-
-    <script src="script.js"></script>
 </body>
 </html>
