@@ -7,14 +7,17 @@
 <style>
 body { background: #121212; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
 #digitalClock { font-size: 3.5rem; color: #03dac6; margin-bottom: 20px; font-weight: bold; }
-.card { background: #1e1e1e; padding: 20px; border-radius: 15px; display: inline-block; width: 90%; max-width: 400px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-input { padding: 10px; margin: 10px 0; width: 85%; border-radius: 5px; border: 1px solid #333; background: #2c2c2c; color: white; }
-.days { display: flex; justify-content: space-around; margin: 15px 0; }
-.day { font-size: 0.7rem; display: flex; flex-direction: column; }
-button { padding: 10px; margin: 5px; cursor: pointer; border-radius: 5px; border: none; font-weight: bold; width: 45%; }
-.btn-s { background: #03dac6; } .btn-l { background: #bb86fc; }
+.card { background: #1e1e1e; padding: 25px; border-radius: 15px; display: inline-block; width: 90%; max-width: 400px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+input { padding: 12px; margin: 10px 0; width: 85%; border-radius: 8px; border: 1px solid #333; background: #2c2c2c; color: white; font-size: 1rem; }
+.days { display: flex; justify-content: space-around; margin: 20px 0; }
+.day { font-size: 0.8rem; display: flex; flex-direction: column; align-items: center; }
+.day input { width: 20px; height: 20px; margin-top: 5px; }
+button { padding: 12px; margin: 10px 5px; cursor: pointer; border-radius: 8px; border: none; font-weight: bold; width: 45%; font-size: 1rem; }
+.btn-s { background: #03dac6; color: black; }
+.btn-l { background: #bb86fc; color: black; }
 #alarmList { list-style: none; padding: 0; margin-top: 30px; }
-.item { background: #2c2c2c; padding: 10px; margin: 5px auto; max-width: 380px; display: flex; justify-content: space-between; border-left: 4px solid #03dac6; border-radius: 5px; }
+.item { background: #2c2c2c; padding: 15px; margin: 10px auto; max-width: 380px; display: flex; justify-content: space-between; border-left: 5px solid #03dac6; border-radius: 10px; text-align: left; }
+.del-btn { background: #cf6679; color: white; width: auto; padding: 5px 15px; }
 </style>
 </head>
 <body>
@@ -22,7 +25,8 @@ button { padding: 10px; margin: 5px; cursor: pointer; border-radius: 5px; border
 <div id="digitalClock">00:00:00</div>
 
 <div class="card">
-<input type="text" id="aTitle" placeholder="Name">
+<h3 style="margin-top:0">Neuer Wecker</h3>
+<input type="text" id="aTitle" placeholder="Bezeichnung">
 <input type="time" id="aTime">
 <div class="days">
 <div class="day">Mo<input type="checkbox" class="d" value="1"></div>
@@ -40,7 +44,7 @@ button { padding: 10px; margin: 5px; cursor: pointer; border-radius: 5px; border
 <ul id="alarmList"></ul>
 
 <script>
-/* Alles in einfachem Stil ohne Sonderzeichen */
+/* Sicherheits-Skript ohne Sonderzeichen */
 var alarms = JSON.parse(localStorage.getItem('myAlarms')) || [];
 var days = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
 
@@ -65,8 +69,8 @@ alarms.forEach(function(a, i) {
     
     var li = document.createElement(&#39;li&#39;);
     li.className = &#39;item&#39;;
-    li.innerHTML = &#39;&lt;div style=&quot;text-align:left&quot;&gt;&lt;b&gt;&#39; + a.t + &#39; Uhr&lt;/b&gt; - &#39; + a.n + &#39;<br>&lt;small&gt;&#39; + dStr + &#39;&lt;/small&gt;&lt;/div&gt;&#39; +
-                   &#39;&lt;button onclick=&quot;del(&#39; + i + &#39;)&quot; style=&quot;width:auto;background:red;color:white&quot;&gt;X&lt;/button&gt;&#39;;
+    li.innerHTML = &#39;&lt;div&gt;&lt;b&gt;&#39; + a.t + &#39; Uhr&lt;/b&gt; - &#39; + a.n + &#39;<br>&lt;small style=&quot;color:#aaa&quot;&gt;&#39; + dStr + &#39;&lt;/small&gt;&lt;/div&gt;&#39; +
+                   &#39;&lt;button class=&quot;del-btn&quot; onclick=&quot;del(&#39; + i + &#39;)&quot;&gt;X&lt;/button&gt;&#39;;
     list.appendChild(li);
 });
 }
@@ -85,16 +89,20 @@ for (var i = 0; i &lt; cb.length; i++) {
 }
 
 if(t === &quot;&quot;) {
-    alert(&quot;Zeit fehlt!&quot;);
+    alert(&quot;Bitte Uhrzeit angeben!&quot;);
     return;
 }
 if(sel.length === 0) {
-    alert(&quot;Tage wählen!&quot;);
+    alert(&quot;Bitte mindestens einen Tag wählen!&quot;);
     return;
 }
 
 alarms.push({ t: t, n: n, d: sel });
 save();
+
+/* Felder leeren */
+document.getElementById(&#39;aTime&#39;).value = &quot;&quot;;
+for (var j = 0; j &lt; cb.length; j++) { cb[j].checked = false; }
 }
 
 function del(i) {
@@ -108,11 +116,16 @@ show();
 }
 
 function link() {
+if (alarms.length === 0) {
+alert("Keine Wecker zum Teilen da!");
+return;
+}
 var s = encodeURIComponent(JSON.stringify(alarms));
 var l = window.location.origin + window.location.pathname + "?setup=" + s;
-navigator.clipboard.writeText(l).then(function() { alert("Kopiert!"); });
+navigator.clipboard.writeText(l).then(function() { alert("Link kopiert!"); });
 }
 
+/* URL Check */
 var urlParams = new URLSearchParams(window.location.search);
 var p = urlParams.get('setup');
 if(p) {
@@ -122,8 +135,11 @@ if (Array.isArray(geladen)) {
 alarms = geladen;
 localStorage.setItem('myAlarms', JSON.stringify(alarms));
 window.history.replaceState({}, "", window.location.pathname);
+alert("Wecker geladen!");
 }
-} catch(e) {}
+} catch(e) {
+console.log("Fehler beim Laden");
+}
 }
 
 setInterval(runClock, 1000);
