@@ -139,11 +139,23 @@ alarms.forEach(a => {
 }
 
 function deleteAlarm(id) {
-alarms = alarms.filter(a => a.id !== id);
-saveData();
-renderAlarms();
-}
+    // Wir suchen den Wecker in der Liste, um seinen Namen in der Frage anzuzeigen
+    const alarmToDelete = alarms.find(a => a.id === id);
+    const alarmName = alarmToDelete ? alarmToDelete.title : "diesen Wecker";
 
+    // Die Sicherheitsabfrage
+    const sicherheit = confirm("Möchtest du den Wecker '" + alarmName + "' wirklich löschen?");
+
+    if (sicherheit) {
+        // Nur wenn 'OK' geklickt wurde:
+        alarms = alarms.filter(a => a.id !== id);
+        saveData();
+        renderAlarms();
+    } else {
+        // Wenn 'Abbrechen' geklickt wurde, passiert einfach gar nichts
+        console.log("Löschen abgebrochen.");
+    }
+}
 // 8. Start
 setInterval(updateClock, 1000);
 setInterval(checkAlarms, 1000);
