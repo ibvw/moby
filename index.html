@@ -1,20 +1,102 @@
+
 <!DOCTYPE html>
 
-<html>
+<html lang="de">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Moby Wecker</title>
 <style>
 body { background: #121212; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
-#digitalClock { font-size: 3rem; color: #03dac6; margin: 20px; }
-.card { background: #1e1e1e; padding: 20px; border-radius: 10px; display: inline-block; }
-input { padding: 8px; margin: 5px; }
-#alarmList { list-style: none; padding: 0; max-width: 300px; margin: 20px auto; }
-.item { background: #333; padding: 10px; margin: 5px; border-radius: 5px; display: flex; justify-content: space-between; }
-button { cursor: pointer; }
+#digitalClock { font-size: 3.5rem; color: #03dac6; margin: 20px 0; font-weight: bold; }
+.card { background: #1e1e1e; padding: 20px; border-radius: 12px; display: inline-block; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+input { padding: 10px; margin: 5px; border-radius: 6px; border: 1px solid #333; background: #2c2c2c; color: white; }
+button { padding: 10px 20px; margin: 10px 5px; cursor: pointer; border-radius: 6px; border: none; font-weight: bold; }
+.btn-save { background: #03dac6; color: black; }
+.btn-share { background: #bb86fc; color: black; }
+#alarmList { list-style: none; padding: 0; max-width: 350px; margin: 20px auto; }
+.item { background: #2c2c2c; padding: 15px; margin-bottom: 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #03dac6; }
+.delete-btn { background: #cf6679; color: white; padding: 5px; }
 </style>
 </head>
 <body>
+
+<div id="digitalClock">00:00:00</div>
+
+<div class="card">
+<input type="text" id="alarmTitle" placeholder="Name">
+<input type="time" id="alarmTime">
+
+
+
+<button class="btn-save" onclick="addAlarm()">Speichern</button>
+<button class="btn-share" onclick="generateShareLink()">Link teilen</button>
+</div>
+
+<ul id="alarmList"></ul>
+
+<script>
+let alarms = JSON.parse(localStorage.getItem('myAlarms')) || [];
+
+function updateClock() {
+document.getElementById('digitalClock').textContent = new Date().toLocaleTimeString('de-DE');
+}
+
+function renderAlarms() {
+const list = document.getElementById('alarmList');
+if (!list) return;
+list.innerHTML = "";
+alarms.sort((a, b) => a.time.localeCompare(b.time));
+alarms.forEach(a => {
+const li = document.createElement('li');
+li.className = "item";
+li.innerHTML = &lt;div&gt;&lt;strong&gt;${a.time}&lt;/strong&gt;<br>&lt;small&gt;${a.title}&lt;/small&gt;&lt;/div&gt; &lt;button class=&quot;delete-btn&quot; onclick=&quot;deleteAlarm(${a.id})&quot;&gt;Löschen&lt;/button&gt;;
+list.appendChild(li);
+});
+}
+
+function addAlarm() {
+const time = document.getElementById('alarmTime').value;
+const title = document.getElementById('alarmTitle').value || "Wecker";
+if(!time) return alert("Zeit wählen!");
+alarms.push({id: Date.now(), time, title});
+save();
+}
+
+function deleteAlarm(id) {
+alarms = alarms.filter(a => a.id !== id);
+save();
+}
+
+function save() {
+localStorage.setItem('myAlarms', JSON.stringify(alarms));
+renderAlarms();
+}
+
+function generateShareLink() {
+const d = encodeURIComponent(JSON.stringify(alarms));
+const l = window.location.origin + window.location.pathname + "?setup=" + d;
+navigator.clipboard.writeText(l).then(() => alert("Link kopiert!"));
+}
+
+const urlParams = new URLSearchParams(window.location.search);
+const setup = urlParams.get('setup');
+if (setup) {
+try {
+const decoded = JSON.parse(decodeURIComponent(setup));
+if (Array.isArray(decoded)) {
+alarms = decoded;
+localStorage.setItem('myAlarms', JSON.stringify(alarms));
+alert("Setup geladen!");
+window.history.replaceState({}, "", window.location.pathname);
+}
+} catch (e) { console.error(e); }
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+renderAlarms();
+</script>
 
 </body>
 </html>
