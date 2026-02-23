@@ -3,108 +3,98 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Moby Wecker</title>
 <style>
 body { background: #121212; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
-#digitalClock { font-size: 3.5rem; color: #03dac6; margin: 20px 0; font-weight: bold; }
-.card { background: #1e1e1e; padding: 25px; border-radius: 15px; display: inline-block; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 100%; max-width: 400px; }
-input[type="text"], input[type="time"] { padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #333; background: #2c2c2c; color: white; width: 90%; font-size: 1rem; }
-.days-container { display: flex; justify-content: space-between; margin: 20px 0; }
-.day-option { display: flex; flex-direction: column; align-items: center; font-size: 0.8rem; }
-.day-option input { margin-top: 8px; width: 18px; height: 18px; cursor: pointer; }
-button { padding: 12px 20px; margin: 10px 5px; cursor: pointer; border-radius: 8px; border: none; font-weight: bold; width: 45%; }
-.btn-save { background: #03dac6; color: black; }
-.btn-share { background: #bb86fc; color: black; }
-#alarmList { list-style: none; padding: 0; max-width: 400px; margin: 30px auto; }
-.item { background: #2c2c2c; padding: 15px; margin-bottom: 10px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #03dac6; text-align: left; }
-.delete-btn { background: #cf6679; color: white; border-radius: 5px; padding: 5px 10px; width: auto; }
+#digitalClock { font-size: 3.5rem; color: #03dac6; margin-bottom: 20px; font-weight: bold; }
+.card { background: #1e1e1e; padding: 20px; border-radius: 15px; display: inline-block; width: 90%; max-width: 400px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+input { padding: 10px; margin: 10px 0; width: 85%; border-radius: 5px; border: 1px solid #333; background: #2c2c2c; color: white; }
+.days { display: flex; justify-content: space-around; margin: 15px 0; }
+.day { font-size: 0.7rem; display: flex; flex-direction: column; }
+button { padding: 10px; margin: 5px; cursor: pointer; border-radius: 5px; border: none; font-weight: bold; width: 45%; }
+.btn-s { background: #03dac6; } .btn-l { background: #bb86fc; }
+#alarmList { list-style: none; padding: 0; margin-top: 30px; }
+.item { background: #2c2c2c; padding: 10px; margin: 5px auto; max-width: 380px; display: flex; justify-content: space-between; border-left: 4px solid #03dac6; border-radius: 5px; }
 </style>
 </head>
 <body>
+
 <div id="digitalClock">00:00:00</div>
+
 <div class="card">
-<h3 style="margin-top:0">Wecker einstellen</h3>
-<input type="text" id="alarmTitle" placeholder="Bezeichnung">
-<input type="time" id="alarmTime">
-<div style="margin-top: 15px; font-weight: bold; font-size: 0.9rem;">Tage wählen:</div>
-<div class="days-container">
-<div class="day-option"><label>Mo</label><input type="checkbox" class="day-check" value="1"></div>
-<div class="day-option"><label>Di</label><input type="checkbox" class="day-check" value="2"></div>
-<div class="day-option"><label>Mi</label><input type="checkbox" class="day-check" value="3"></div>
-<div class="day-option"><label>Do</label><input type="checkbox" class="day-check" value="4"></div>
-<div class="day-option"><label>Fr</label><input type="checkbox" class="day-check" value="5"></div>
-<div class="day-option"><label>Sa</label><input type="checkbox" class="day-check" value="6"></div>
-<div class="day-option"><label>So</label><input type="checkbox" class="day-check" value="0"></div>
+<input type="text" id="aTitle" placeholder="Name">
+<input type="time" id="aTime">
+<div class="days">
+<div class="day">Mo<input type="checkbox" class="d" value="1"></div>
+<div class="day">Di<input type="checkbox" class="d" value="2"></div>
+<div class="day">Mi<input type="checkbox" class="d" value="3"></div>
+<div class="day">Do<input type="checkbox" class="d" value="4"></div>
+<div class="day">Fr<input type="checkbox" class="d" value="5"></div>
+<div class="day">Sa<input type="checkbox" class="d" value="6"></div>
+<div class="day">So<input type="checkbox" class="d" value="0"></div>
 </div>
-<button class="btn-save" onclick="addAlarm()">Speichern</button>
-<button class="btn-share" onclick="generateShareLink()">Teilen</button>
+<button class="btn-s" onclick="add()">Speichern</button>
+<button class="btn-l" onclick="link()">Teilen</button>
 </div>
+
 <ul id="alarmList"></ul>
+
 <script>
 let alarms = JSON.parse(localStorage.getItem('myAlarms')) || [];
-const dayNames = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+const days = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
 
-function updateClock() {
+function runClock() {
 const el = document.getElementById('digitalClock');
-if (el) el.textContent = new Date().toLocaleTimeString('de-DE');
+if(el) el.textContent = new Date().toLocaleTimeString('de-DE');
 }
 
-function renderAlarms() {
+function show() {
 const list = document.getElementById('alarmList');
-if (!list) return;
+if(!list) return;
 list.innerHTML = "";
-alarms.sort((a, b) => a.time.localeCompare(b.time));
-alarms.forEach(a => {
-const dStr = a.days && a.days.length > 0 ? a.days.map(d => dayNames[d]).join(", ") : "Keine Tage";
-const li = document.createElement('li');
-li.className = "item";
-li.innerHTML = &lt;div&gt;&lt;strong&gt;${a.time} Uhr&lt;/strong&gt; - ${a.title}<br>&lt;small style=&quot;color:#aaa&quot;&gt;${dStr}&lt;/small&gt;&lt;/div&gt; &lt;button class=&quot;delete-btn&quot; onclick=&quot;deleteAlarm(${a.id})&quot;&gt;X&lt;/button&gt;;
-list.appendChild(li);
+alarms.forEach((a, i) => {
+const dStr = a.d ? a.d.map(x => days[x]).join(",") : "";
+list.innerHTML += &lt;li class=&quot;item&quot;&gt; &lt;div style=&quot;text-align:left&quot;&gt;&lt;b&gt;${a.t} Uhr&lt;/b&gt; - ${a.n}<br>&lt;small&gt;${dStr}&lt;/small&gt;&lt;/div&gt; &lt;button onclick=&quot;del(${i})&quot; style=&quot;width:auto;background:red;color:white&quot;&gt;X&lt;/button&gt; &lt;/li&gt;;
 });
 }
 
-function addAlarm() {
-const t = document.getElementById('alarmTime').value;
-const n = document.getElementById('alarmTitle').value || "Wecker";
-const checks = document.querySelectorAll('.day-check:checked');
-let s = [];
-checks.forEach(c => s.push(parseInt(c.value)));
-if(!t) return alert("Zeit wählen!");
-if(s.length === 0) return alert("Tag wählen!");
-alarms.push({ id: Date.now(), time: t, title: n, days: s });
-save();
+function add() {
+const t = document.getElementById('aTime').value;
+const n = document.getElementById('aTitle').value || "Wecker";
+const cb = document.querySelectorAll('.d:checked');
+let sel = [];
+cb.forEach(c => sel.push(parseInt(c.value)));
+
 }
 
-function deleteAlarm(id) {
-alarms = alarms.filter(a => a.id !== id);
+function del(i) {
+alarms.splice(i, 1);
 save();
 }
 
 function save() {
 localStorage.setItem('myAlarms', JSON.stringify(alarms));
-renderAlarms();
+show();
 }
 
-function generateShareLink() {
-const d = encodeURIComponent(JSON.stringify(alarms));
-const l = window.location.origin + window.location.pathname + "?setup=" + d;
-navigator.clipboard.writeText(l).then(() => alert("Link kopiert!"));
+function link() {
+const s = encodeURIComponent(JSON.stringify(alarms));
+const l = window.location.origin + window.location.pathname + "?setup=" + s;
+navigator.clipboard.writeText(l).then(() => alert("Kopiert!"));
 }
 
-const params = new URLSearchParams(window.location.search);
-const setup = params.get('setup');
-if (setup) {
+const p = new URLSearchParams(window.location.search).get('setup');
+if(p) {
 try {
-alarms = JSON.parse(decodeURIComponent(setup));
+alarms = JSON.parse(decodeURIComponent(p));
 localStorage.setItem('myAlarms', JSON.stringify(alarms));
 window.history.replaceState({}, "", window.location.pathname);
-} catch (e) {}
+} catch(e) {}
 }
 
-setInterval(updateClock, 1000);
-updateClock();
-renderAlarms();
+setInterval(runClock, 1000);
+runClock();
+show();
 </script>
 
 </body>
