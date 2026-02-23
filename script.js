@@ -11,34 +11,22 @@ const urlParams = new URLSearchParams(window.location.search);
 const sharedData = urlParams.get('setup');
 
 if (sharedData) {
-    console.log("Daten im Link gefunden!");
     try {
         const decodedData = JSON.parse(decodeURIComponent(sharedData));
         if (Array.isArray(decodedData)) {
             alarms = decodedData;
             localStorage.setItem('myAlarms', JSON.stringify(alarms));
-            alert("✅ Wecker-Setup wurde erkannt und gespeichert!");
-            // URL säubern, damit die Meldung nicht bei jedem Reload kommt
+            
+            // WICHTIG: Die Liste sofort neu zeichnen, damit man die Wecker sieht!
+            renderAlarms(); 
+            
+            alert("✅ Wecker-Setup erfolgreich geladen!");
             window.history.replaceState({}, document.title, window.location.pathname);
-        } else {
-            alert("❌ Fehler: Die Daten im Link haben das falsche Format.");
         }
     } catch (e) {
-        console.error("Dekodierungsfehler:", e);
-        alert("❌ Fehler: Der Link ist unvollständig oder beschädigt.");
-    }
-} else {
-    console.log("Keine Setup-Daten im Link vorhanden.");
-}
-
-// 3. Uhr-Funktion
-function updateClock() {
-    const clockElement = document.getElementById('digitalClock');
-    if (clockElement) {
-        clockElement.textContent = new Date().toLocaleTimeString('de-DE');
+        console.error("Link-Fehler", e);
     }
 }
-
 // 4. Wecker hinzufügen
 function addAlarm() {
     const titleInput = document.getElementById('alarmTitle');
