@@ -67,27 +67,32 @@ document.querySelectorAll('.days-selector input').forEach(cb => cb.checked = fal
 
 // 5. Funktion: Wecker prüfen
 function checkAlarms() {
-const now = new Date();
-const h = String(now.getHours()).padStart(2, '0');
-const m = String(now.getMinutes()).padStart(2, '0');
-const currentTime = h + ":" + m;
-const currentDay = now.getDay();
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    const currentTime = h + ":" + m;
+    const currentDay = now.getDay(); 
 
-alarms.forEach(alarm => {
-    if (alarm.active && alarm.time === currentTime && alarm.days.includes(currentDay)) {
-        if (alarm.lastFired !== currentTime) {
-            alarm.lastFired = currentTime;
-            
-            alarmSound.play().catch(() => console.log("Klicke auf die Seite für Ton!"));
-            
-            setTimeout(() => {
-                alert("⏰ ALARM: " + alarm.title);
-                alarmSound.pause();
-                alarmSound.currentTime = 0;
-            }, 100);
+    alarms.forEach(alarm => {
+        if (alarm.active && alarm.time === currentTime && alarm.days.includes(currentDay)) {
+            if (alarm.lastFired !== currentTime) {
+                alarm.lastFired = currentTime;
+                
+                // Ton starten
+                alarmSound.play().catch(() => console.log("Klicke auf die Seite für Ton!"));
+                
+                // Das Fenster zeigt jetzt den TITEL des Weckers an
+                // Wir nutzen einen kleinen Timeout, damit der Browser den Ton sicher startet
+                setTimeout(() => {
+                    alert("⏰ " + alarm.title.toUpperCase() + "\nEs ist " + alarm.time + " Uhr.");
+                    
+                    // Ton stoppen, wenn OK geklickt wurde
+                    alarmSound.pause();
+                    alarmSound.currentTime = 0;
+                }, 100);
+            }
         }
-    }
-});
+    });
 }
 
 // 6. Funktion: Link für Kollegin erstellen
