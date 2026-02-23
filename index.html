@@ -3,23 +3,23 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Moby Wecker Pro</title>
+<title>Moby Wecker</title>
 <style>
 body { background: #121212; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
-#digitalClock { font-size: 3.5rem; color: #03dac6; margin: 20px 0; font-weight: bold; }
-.card { background: #1e1e1e; padding: 20px; border-radius: 12px; display: inline-block; box-shadow: 0 4px 15px rgba(0,0,0,0.5); width: 95%; max-width: 450px; }
-input[type="text"], input[type="time"] { padding: 10px; margin: 5px; border-radius: 6px; border: 1px solid #333; background: #2c2c2c; color: white; width: 80%; }
-
+#digitalClock { font-size: 3rem; color: #03dac6; margin-bottom: 20px; }
+.card { background: #1e1e1e; padding: 20px; border-radius: 10px; display: inline-block; }
+.day-row { margin: 15px 0; background: #2c2c2c; padding: 10px; border-radius: 5px; }
+#alarmList { list-style: none; padding: 0; max-width: 400px; margin: 20px auto; }
+.item { background: #333; padding: 10px; margin: 5px; display: flex; justify-content: space-between; align-items: center; border-radius: 5px; }
+button { cursor: pointer; padding: 10px; }
 </style>
 </head>
 <body>
 
-<div id="digitalClock">...</div>
+<div id="digitalClock">00:00:00</div>
 
 <div class="card">
-<h3>Neuer Wecker</h3>
-<input type="text" id="alarmTitle" placeholder="Bezeichnung (z.B. Meeting)">
+<input type="text" id="alarmTitle" placeholder="Name">
 <input type="time" id="alarmTime">
 
 </div>
@@ -31,56 +31,48 @@ let alarms = JSON.parse(localStorage.getItem('myAlarms')) || [];
 const dayNames = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
 
 function updateClock() {
-const el = document.getElementById('digitalClock');
-if (el) el.textContent = new Date().toLocaleTimeString('de-DE');
+document.getElementById('digitalClock').textContent = new Date().toLocaleTimeString('de-DE');
 }
 
 function renderAlarms() {
 const list = document.getElementById('alarmList');
-if (!list) return;
 list.innerHTML = "";
-alarms.sort((a, b) => a.time.localeCompare(b.time));
-
+alarms.forEach(a => {
+const dStr = a.days ? a.days.map(d => dayNames[d]).join(", ") : "Mo-Fr";
+const li = document.createElement('li');
+li.className = "item";
+li.innerHTML = &lt;div&gt;&lt;b&gt;${a.time}&lt;/b&gt; - ${a.title}<br>&lt;small&gt;${dStr}&lt;/small&gt;&lt;/div&gt; &lt;button onclick=&quot;deleteAlarm(${a.id})&quot; style=&quot;background:red;color:white&quot;&gt;X&lt;/button&gt;;
+list.appendChild(li);
+});
 }
 
 function addAlarm() {
 const time = document.getElementById('alarmTime').value;
 const title = document.getElementById('alarmTitle').value || "Wecker";
-const checkboxes = document.querySelectorAll('.days-selector input:checked');
+const checks = document.querySelectorAll('.day-check:checked');
+let selected = [];
+checks.forEach(c => selected.push(parseInt(c.value)));
 
 }
 
 function deleteAlarm(id) {
-if(confirm("Löschen?")) {
 alarms = alarms.filter(a => a.id !== id);
-save();
-}
-}
-
-function save() {
 localStorage.setItem('myAlarms', JSON.stringify(alarms));
 renderAlarms();
 }
 
 function generateShareLink() {
-if(alarms.length === 0) return alert("Keine Wecker vorhanden!");
 const d = encodeURIComponent(JSON.stringify(alarms));
 const l = window.location.origin + window.location.pathname + "?setup=" + d;
-navigator.clipboard.writeText(l).then(() => alert("🔗 Link kopiert!"));
+navigator.clipboard.writeText(l).then(() => alert("Link kopiert!"));
 }
 
-// URL Import
 const params = new URLSearchParams(window.location.search);
-const setup = params.get('setup');
-if (setup) {
+if (params.get('setup')) {
 try {
-const decoded = JSON.parse(decodeURIComponent(setup));
-if (Array.isArray(decoded)) {
-alarms = decoded;
+alarms = JSON.parse(decodeURIComponent(params.get('setup')));
 localStorage.setItem('myAlarms', JSON.stringify(alarms));
-alert("✅ Setup geladen!");
 window.history.replaceState({}, "", window.location.pathname);
-}
 } catch (e) { console.error(e); }
 }
 
