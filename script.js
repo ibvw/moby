@@ -1,12 +1,10 @@
-
-JavaScript
 // 1. Grund-Daten laden
 let alarms = JSON.parse(localStorage.getItem('myAlarms')) || [];
 const dayNames = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
 const alarmSound = new Audio('alarm.mp3');
 alarmSound.loop = true;
 
-// 2. URL-Check beim Start (Lösung A)
+// 2. URL-Check beim Start
 const urlParams = new URLSearchParams(window.location.search);
 const sharedData = urlParams.get('setup');
 
@@ -98,15 +96,19 @@ function generateShareLink() {
         return;
     }
     const dataString = encodeURIComponent(JSON.stringify(alarms));
-    const baseUrl = window.location.href.split('?')[0];
+    // Basis-URL sauber ermitteln
+    const baseUrl = window.location.origin + window.location.pathname;
     const fullLink = baseUrl + "?setup=" + dataString;
 
     navigator.clipboard.writeText(fullLink).then(() => {
         alert("Link kopiert! Schicke ihn deiner Kollegin.");
+    }).catch(err => {
+        console.error('Fehler beim Kopieren: ', err);
+        alert("Link konnte nicht kopiert werden. Link: " + fullLink);
     });
 }
 
-// 7. Hilfsfunktionen (Speichern & Rendern)
+// 7. Hilfsfunktionen
 function saveData() {
     localStorage.setItem('myAlarms', JSON.stringify(alarms));
 }
@@ -135,7 +137,7 @@ function renderAlarms() {
     });
 }
 
-// 8. NEU: Die korrigierte Lösch-Funktion mit Abfrage
+// 8. Lösch-Funktion
 function deleteAlarm(id) {
     const alarmToDelete = alarms.find(a => a.id === id);
     const alarmName = alarmToDelete ? alarmToDelete.title : "diesen Wecker";
