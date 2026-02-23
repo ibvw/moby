@@ -40,13 +40,15 @@ button { padding: 10px; margin: 5px; cursor: pointer; border-radius: 5px; border
 <ul id="alarmList"></ul>
 
 <script>
+/* Alles in einfachem Stil ohne Sonderzeichen */
 var alarms = JSON.parse(localStorage.getItem('myAlarms')) || [];
 var days = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
 
 function runClock() {
 var el = document.getElementById('digitalClock');
 if(el) {
-el.textContent = new Date().toLocaleTimeString('de-DE');
+var jetzt = new Date();
+el.textContent = jetzt.toLocaleTimeString('de-DE');
 }
 }
 
@@ -54,10 +56,13 @@ function show() {
 var list = document.getElementById('alarmList');
 if(!list) return;
 list.innerHTML = "";
-alarms.forEach(function(a, i) {
-var dStr = "";
-if (a.d) { dStr = a.d.map(function(x){ return days[x]; }).join(","); }
 
+alarms.forEach(function(a, i) {
+    var dStr = &quot;&quot;;
+    if (a.d) { 
+        dStr = a.d.map(function(x){ return days[x]; }).join(&quot;,&quot;); 
+    }
+    
     var li = document.createElement(&#39;li&#39;);
     li.className = &#39;item&#39;;
     li.innerHTML = &#39;&lt;div style=&quot;text-align:left&quot;&gt;&lt;b&gt;&#39; + a.t + &#39; Uhr&lt;/b&gt; - &#39; + a.n + &#39;<br>&lt;small&gt;&#39; + dStr + &#39;&lt;/small&gt;&lt;/div&gt;&#39; +
@@ -68,13 +73,23 @@ if (a.d) { dStr = a.d.map(function(x){ return days[x]; }).join(","); }
 
 function add() {
 var t = document.getElementById('aTime').value;
-var n = document.getElementById('aTitle').value || "Wecker";
-var cb = document.querySelectorAll('.d:checked');
-var sel = [];
-cb.forEach(function(c) { sel.push(parseInt(c.value)); });
+var n = document.getElementById('aTitle').value;
+if (n === "") { n = "Wecker"; }
 
-if(t === &quot;&quot; || sel.length === 0) {
-    alert(&quot;Zeit und Tage wählen!&quot;);
+var cb = document.querySelectorAll(&#39;.d&#39;);
+var sel = [];
+for (var i = 0; i &lt; cb.length; i++) {
+    if (cb[i].checked) {
+        sel.push(parseInt(cb[i].value));
+    }
+}
+
+if(t === &quot;&quot;) {
+    alert(&quot;Zeit fehlt!&quot;);
+    return;
+}
+if(sel.length === 0) {
+    alert(&quot;Tage wählen!&quot;);
     return;
 }
 
@@ -102,9 +117,12 @@ var urlParams = new URLSearchParams(window.location.search);
 var p = urlParams.get('setup');
 if(p) {
 try {
-alarms = JSON.parse(decodeURIComponent(p));
+var geladen = JSON.parse(decodeURIComponent(p));
+if (Array.isArray(geladen)) {
+alarms = geladen;
 localStorage.setItem('myAlarms', JSON.stringify(alarms));
 window.history.replaceState({}, "", window.location.pathname);
+}
 } catch(e) {}
 }
 
