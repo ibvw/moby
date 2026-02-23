@@ -5,24 +5,30 @@ const dayNames = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
 const alarmSound = new Audio('alarm.mp3');
 alarmSound.loop = true;
 
-// 2. Verbesserter URL-Check (Liest 'setup' UND 's' aus)
+// 2. DIAGNOSE-URL-Check
+console.log("Prüfe URL auf Daten...");
 const urlParams = new URLSearchParams(window.location.search);
-const sharedData = urlParams.get('setup') || urlParams.get('s');
+const sharedData = urlParams.get('setup');
 
 if (sharedData) {
+    console.log("Daten im Link gefunden!");
     try {
-        // Versuche die Daten zu dekodieren
         const decodedData = JSON.parse(decodeURIComponent(sharedData));
         if (Array.isArray(decodedData)) {
             alarms = decodedData;
             localStorage.setItem('myAlarms', JSON.stringify(alarms));
-            // URL bereinigen
+            alert("✅ Wecker-Setup wurde erkannt und gespeichert!");
+            // URL säubern, damit die Meldung nicht bei jedem Reload kommt
             window.history.replaceState({}, document.title, window.location.pathname);
-            alert("✅ Wecker-Setup erfolgreich geladen!");
+        } else {
+            alert("❌ Fehler: Die Daten im Link haben das falsche Format.");
         }
     } catch (e) {
-        console.error("Fehler beim Laden der Daten:", e);
+        console.error("Dekodierungsfehler:", e);
+        alert("❌ Fehler: Der Link ist unvollständig oder beschädigt.");
     }
+} else {
+    console.log("Keine Setup-Daten im Link vorhanden.");
 }
 
 // 3. Uhr-Funktion
