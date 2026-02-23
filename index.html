@@ -40,31 +40,46 @@ button { padding: 10px; margin: 5px; cursor: pointer; border-radius: 5px; border
 <ul id="alarmList"></ul>
 
 <script>
-let alarms = JSON.parse(localStorage.getItem('myAlarms')) || [];
-const days = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+var alarms = JSON.parse(localStorage.getItem('myAlarms')) || [];
+var days = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
 
 function runClock() {
-const el = document.getElementById('digitalClock');
-if(el) el.textContent = new Date().toLocaleTimeString('de-DE');
+var el = document.getElementById('digitalClock');
+if(el) {
+el.textContent = new Date().toLocaleTimeString('de-DE');
+}
 }
 
 function show() {
-const list = document.getElementById('alarmList');
+var list = document.getElementById('alarmList');
 if(!list) return;
 list.innerHTML = "";
-alarms.forEach((a, i) => {
-const dStr = a.d ? a.d.map(x => days[x]).join(",") : "";
-list.innerHTML += &lt;li class=&quot;item&quot;&gt; &lt;div style=&quot;text-align:left&quot;&gt;&lt;b&gt;${a.t} Uhr&lt;/b&gt; - ${a.n}<br>&lt;small&gt;${dStr}&lt;/small&gt;&lt;/div&gt; &lt;button onclick=&quot;del(${i})&quot; style=&quot;width:auto;background:red;color:white&quot;&gt;X&lt;/button&gt; &lt;/li&gt;;
+alarms.forEach(function(a, i) {
+var dStr = "";
+if (a.d) { dStr = a.d.map(function(x){ return days[x]; }).join(","); }
+
+    var li = document.createElement(&#39;li&#39;);
+    li.className = &#39;item&#39;;
+    li.innerHTML = &#39;&lt;div style=&quot;text-align:left&quot;&gt;&lt;b&gt;&#39; + a.t + &#39; Uhr&lt;/b&gt; - &#39; + a.n + &#39;<br>&lt;small&gt;&#39; + dStr + &#39;&lt;/small&gt;&lt;/div&gt;&#39; +
+                   &#39;&lt;button onclick=&quot;del(&#39; + i + &#39;)&quot; style=&quot;width:auto;background:red;color:white&quot;&gt;X&lt;/button&gt;&#39;;
+    list.appendChild(li);
 });
 }
 
 function add() {
-const t = document.getElementById('aTime').value;
-const n = document.getElementById('aTitle').value || "Wecker";
-const cb = document.querySelectorAll('.d:checked');
-let sel = [];
-cb.forEach(c => sel.push(parseInt(c.value)));
+var t = document.getElementById('aTime').value;
+var n = document.getElementById('aTitle').value || "Wecker";
+var cb = document.querySelectorAll('.d:checked');
+var sel = [];
+cb.forEach(function(c) { sel.push(parseInt(c.value)); });
 
+if(t === &quot;&quot; || sel.length === 0) {
+    alert(&quot;Zeit und Tage wählen!&quot;);
+    return;
+}
+
+alarms.push({ t: t, n: n, d: sel });
+save();
 }
 
 function del(i) {
@@ -78,12 +93,13 @@ show();
 }
 
 function link() {
-const s = encodeURIComponent(JSON.stringify(alarms));
-const l = window.location.origin + window.location.pathname + "?setup=" + s;
-navigator.clipboard.writeText(l).then(() => alert("Kopiert!"));
+var s = encodeURIComponent(JSON.stringify(alarms));
+var l = window.location.origin + window.location.pathname + "?setup=" + s;
+navigator.clipboard.writeText(l).then(function() { alert("Kopiert!"); });
 }
 
-const p = new URLSearchParams(window.location.search).get('setup');
+var urlParams = new URLSearchParams(window.location.search);
+var p = urlParams.get('setup');
 if(p) {
 try {
 alarms = JSON.parse(decodeURIComponent(p));
