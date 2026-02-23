@@ -1,84 +1,108 @@
 <!DOCTYPE html>
 
-<html lang="de">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Moby Wecker</title>
+<title>Wecker</title>
 <style>
-body { background: #121212; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
-#digitalClock { font-size: 3rem; color: #03dac6; margin-bottom: 20px; }
-.card { background: #1e1e1e; padding: 20px; border-radius: 10px; display: inline-block; }
-.day-row { margin: 15px 0; background: #2c2c2c; padding: 10px; border-radius: 5px; }
-#alarmList { list-style: none; padding: 0; max-width: 400px; margin: 20px auto; }
-.item { background: #333; padding: 10px; margin: 5px; display: flex; justify-content: space-between; align-items: center; border-radius: 5px; }
-button { cursor: pointer; padding: 10px; }
+body { background: #000; color: #fff; font-family: sans-serif; text-align: center; }
+#uhr { font-size: 50px; color: cyan; margin: 20px; }
+.box { border: 1px solid #444; padding: 10px; display: inline-block; background: #111; }
+.liste { margin-top: 20px; text-align: left; display: inline-block; width: 300px; }
+.wecker-item { border-bottom: 1px solid #333; padding: 10px; display: flex; justify-content: space-between; }
 </style>
 </head>
 <body>
 
-<div id="digitalClock">00:00:00</div>
+<div id="uhr">00:00:00</div>
 
-<div class="card">
-<input type="text" id="alarmTitle" placeholder="Name">
-<input type="time" id="alarmTime">
+<div class="box">
+<input type="text" id="titel" placeholder="Name">
 
+
+
+<input type="time" id="zeit">
+
+
+
+
+<strong>Tage wählen:</strong>
+
+
+
+<input type="checkbox" class="tag" value="1" checked> Mo
+<input type="checkbox" class="tag" value="2" checked> Di
+<input type="checkbox" class="tag" value="3" checked> Mi
+<input type="checkbox" class="tag" value="4" checked> Do
+<input type="checkbox" class="tag" value="5" checked> Fr
+<input type="checkbox" class="tag" value="6"> Sa
+<input type="checkbox" class="tag" value="0"> So
+
+
+
+
+<button onclick="neu()">Speichern</button>
+<button onclick="link()">Link kopieren</button>
 </div>
 
-<ul id="alarmList"></ul>
+<div id="liste" class="liste"></div>
 
 <script>
-let alarms = JSON.parse(localStorage.getItem('myAlarms')) || [];
-const dayNames = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+let daten = JSON.parse(localStorage.getItem('wecker')) || [];
+const tageNamen = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
 
-function updateClock() {
-document.getElementById('digitalClock').textContent = new Date().toLocaleTimeString('de-DE');
+function uhrMachen() {
+document.getElementById('uhr').textContent = new Date().toLocaleTimeString('de-DE');
 }
 
-function renderAlarms() {
-const list = document.getElementById('alarmList');
-list.innerHTML = "";
-alarms.forEach(a => {
-const dStr = a.days ? a.days.map(d => dayNames[d]).join(", ") : "Mo-Fr";
-const li = document.createElement('li');
-li.className = "item";
-li.innerHTML = &lt;div&gt;&lt;b&gt;${a.time}&lt;/b&gt; - ${a.title}<br>&lt;small&gt;${dStr}&lt;/small&gt;&lt;/div&gt; &lt;button onclick=&quot;deleteAlarm(${a.id})&quot; style=&quot;background:red;color:white&quot;&gt;X&lt;/button&gt;;
-list.appendChild(li);
+function zeigen() {
+const ziel = document.getElementById('liste');
+ziel.innerHTML = "";
+daten.forEach((w, index) => {
+let tStr = w.t ? w.t.map(t => tageNamen[t]).join(",") : "Mo-Fr";
+ziel.innerHTML += &lt;div class=&quot;wecker-item&quot;&gt; &lt;div&gt;&lt;b&gt;${w.z}&lt;/b&gt; - ${w.n}<br>&lt;small&gt;${tStr}&lt;/small&gt;&lt;/div&gt; &lt;button onclick=&quot;loeschen(${index})&quot;&gt;X&lt;/button&gt; &lt;/div&gt;;
 });
 }
 
-function addAlarm() {
-const time = document.getElementById('alarmTime').value;
-const title = document.getElementById('alarmTitle').value || "Wecker";
-const checks = document.querySelectorAll('.day-check:checked');
-let selected = [];
-checks.forEach(c => selected.push(parseInt(c.value)));
-
+function neu() {
+const z = document.getElementById('zeit').value;
+const n = document.getElementById('titel').value || "Wecker";
+const boxen = document.querySelectorAll('.tag:checked');
+let t = [];
+boxen.forEach(b => t.push(parseInt(b.value)));
+if(!z) return alert("Zeit fehlt!");
+daten.push({z: z, n: n, t: t});
+speichern();
 }
 
-function deleteAlarm(id) {
-alarms = alarms.filter(a => a.id !== id);
-localStorage.setItem('myAlarms', JSON.stringify(alarms));
-renderAlarms();
+function loeschen(i) {
+daten.splice(i, 1);
+speichern();
 }
 
-function generateShareLink() {
-const d = encodeURIComponent(JSON.stringify(alarms));
-const l = window.location.origin + window.location.pathname + "?setup=" + d;
-navigator.clipboard.writeText(l).then(() => alert("Link kopiert!"));
+function speichern() {
+localStorage.setItem('wecker', JSON.stringify(daten));
+zeigen();
 }
 
-const params = new URLSearchParams(window.location.search);
-if (params.get('setup')) {
+function link() {
+const s = encodeURIComponent(JSON.stringify(daten));
+const url = window.location.origin + window.location.pathname + "?setup=" + s;
+navigator.clipboard.writeText(url).then(() => alert("Link kopiert!"));
+}
+
+const p = new URLSearchParams(window.location.search).get('setup');
+if(p) {
 try {
-alarms = JSON.parse(decodeURIComponent(params.get('setup')));
-localStorage.setItem('myAlarms', JSON.stringify(alarms));
+daten = JSON.parse(decodeURIComponent(p));
+localStorage.setItem('wecker', JSON.stringify(daten));
 window.history.replaceState({}, "", window.location.pathname);
-} catch (e) { console.error(e); }
+} catch(e) {}
 }
 
-setInterval(updateClock, 1000);
-updateClock();
-renderAlarms();
+setInterval(uhrMachen, 1000);
+uhrMachen();
+zeigen();
 </script>
 
 </body>
